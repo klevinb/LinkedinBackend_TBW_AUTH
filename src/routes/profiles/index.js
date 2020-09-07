@@ -246,6 +246,9 @@ router.get('/:username/pdf', isUser, async (req, res, next) => {
 router.delete('/me', isUser, async (req, res, next) => {
   try {
     await req.user.remove();
+    await ExperienceModel.collection.deleteMany({
+      username: req.user.username,
+    });
     res.send('Deleted');
   } catch (error) {
     next(error);
@@ -254,12 +257,13 @@ router.delete('/me', isUser, async (req, res, next) => {
 
 router.post('/login', async (req, res, next) => {
   try {
-    const findUser = await ProfileModel.findOne({
-      $or: [
-        { username: req.body.username, password: req.body.password },
-        { email: req.body.username, password: req.body.password },
-      ],
-    });
+    const { credentials, password } = req.body;
+
+    const findUser = await ProfileModel.findByCredentials(
+      credentials,
+      password
+    );
+
     if (findUser) {
       const token = await generateTokens(findUser);
       res.cookie('token', token, {
