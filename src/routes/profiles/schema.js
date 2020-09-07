@@ -1,6 +1,6 @@
-const { Schema } = require("mongoose");
-const mongoose = require("mongoose");
-const validation = require("validator");
+const { Schema } = require('mongoose');
+const mongoose = require('mongoose');
+const validation = require('validator');
 
 const profileSchema = new Schema(
   {
@@ -10,7 +10,7 @@ const profileSchema = new Schema(
       validate: {
         validator: (value) => {
           if (!validation.isLength(value, { min: 2 })) {
-            throw new Error("Name should be at least 2 characters long!");
+            throw new Error('Name should be at least 2 characters long!');
           }
         },
       },
@@ -21,7 +21,7 @@ const profileSchema = new Schema(
       validate: {
         validator: (value) => {
           if (!validation.isLength(value, { min: 2 })) {
-            throw new Error("Name should be at least 2 characters long!");
+            throw new Error('Name should be at least 2 characters long!');
           }
         },
       },
@@ -32,11 +32,11 @@ const profileSchema = new Schema(
       validate: {
         validator: async (value) => {
           if (!validation.isEmail(value)) {
-            throw new Error("Email is invalid");
+            throw new Error('Email is invalid');
           } else {
-            const checkEmail = await profileModel.findOne({ email: value });
+            const checkEmail = await ProfileModel.findOne({ email: value });
             if (checkEmail) {
-              throw new Error("Email already existsts");
+              throw new Error('Email already existsts');
             }
           }
         },
@@ -68,12 +68,19 @@ const profileSchema = new Schema(
       required: true,
       validate: {
         validator: async (value) => {
-          const checkUsername = await profileModel.findOne({ username: value });
+          const checkUsername = await ProfileModel.findOne({ username: value });
           if (checkUsername) {
-            throw new Error("Username already exists!");
+            throw new Error('Username already exists!');
           }
         },
       },
+    },
+    password: {
+      type: String,
+      required: true,
+    },
+    token: {
+      type: String,
     },
   },
   {
@@ -81,5 +88,14 @@ const profileSchema = new Schema(
   }
 );
 
-profileModel = mongoose.model("profile", profileSchema);
-module.exports = profileModel;
+profileSchema.methods.toJSON = function () {
+  var obj = this.toObject();
+  delete obj.password;
+  delete obj.__v;
+  delete obj.token;
+
+  return obj;
+};
+
+ProfileModel = mongoose.model('profile', profileSchema);
+module.exports = ProfileModel;

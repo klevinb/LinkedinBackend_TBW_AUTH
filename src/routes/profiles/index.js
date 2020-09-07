@@ -1,17 +1,21 @@
-const express = require("express");
-const q2m = require("query-to-mongo");
-const profileSchema = require("./schema");
+const express = require('express');
+const q2m = require('query-to-mongo');
+const profileSchema = require('./schema');
 const router = express.Router();
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs-extra");
-const pdfdocument = require("pdfkit");
-const { join } = require("path");
-const ExperienceModel = require("../experience/schema");
-const UserModel = require("../authorization/schema");
-const cloudinary = require("cloudinary").v2;
-const streamifier = require("streamifier");
-const axios = require("axios");
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs-extra');
+const pdfdocument = require('pdfkit');
+const { join } = require('path');
+const ExperienceModel = require('../experience/schema');
+const ProfileModel = require('./schema');
+const cloudinary = require('cloudinary').v2;
+const streamifier = require('streamifier');
+const axios = require('axios');
+
+// Authentication && Authorization
+const { isUser } = require('../authorization/middleware');
+const { generateTokens } = require('../authorization/util');
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -20,10 +24,10 @@ cloudinary.config({
 });
 
 const upload = multer();
-const imagePath = path.join(__dirname, "../../../public/img/profiles");
-const expPath = path.join(__dirname, "../../../public/img/experiences");
+const imagePath = path.join(__dirname, '../../../public/img/profiles');
+const expPath = path.join(__dirname, '../../../public/img/experiences');
 
-router.get("/", async (req, res, next) => {
+router.get('/', isUser, async (req, res, next) => {
   try {
     const query = q2m(req.query);
     const profiles = await profileSchema
@@ -42,29 +46,15 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.get("/me", async (req, res, next) => {
+router.get('/me', isUser, async (req, res, next) => {
   try {
-    const bearerHeaders = req.headers["authorization"];
-    const bearer = bearerHeaders.split(" ");
-    const token = bearer[1];
-
-    const user = await UserModel.findOne({ token });
-    const profile = await profileSchema.findOne({
-      username: user.username,
-    });
-    if (profile) {
-      res.send(profile);
-    } else {
-      const error = new Error();
-      error.httpStatusCode = 404;
-      next(error);
-    }
+    res.status(200).send(req.user);
   } catch (error) {
     next(error);
   }
 });
 
-router.get("/:username", async (req, res, next) => {
+router.get('/:username', isUser, async (req, res, next) => {
   try {
     const profile = await profileSchema.findOne({
       username: req.params.username,
@@ -81,7 +71,7 @@ router.get("/:username", async (req, res, next) => {
   }
 });
 
-router.post("/", async (req, res, next) => {
+router.post('/', async (req, res, next) => {
   try {
     const newProfile = new profileSchema(req.body);
     const response = await newProfile.save();
@@ -91,44 +81,38 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-router.put("/:username", async (req, res, next) => {
+router.put('/me', isUser, async (req, res, next) => {
   try {
-    const updatedprofile = await profileSchema.findOneAndUpdate(
-      { username: req.params.username },
-      req.body
-    );
-    if (updatedprofile) {
-      res.sendStatus(200);
-    } else {
-      const error = new Error(`profile with id ${req.params.id} not found`);
-      error.httpStatusCode = 404;
-      next(error);
-    }
+    delete req.body.username;
+    delete req.body.email;
+
+    const updates = Object.keys(req.body);
+    updates.forEach((update) => (req.user[update] = req.body[update]));
+
+    await req.user.save({ validateBeforeSave: false });
+    res.send(req.user);
   } catch (error) {
     next(error);
   }
 });
 
 router.post(
-  "/:username/upload",
-  upload.single("profile"),
+  '/me/upload',
+  upload.single('profile'),
+  isUser,
   async (req, res, next) => {
     try {
       if (req.file) {
         const cld_upload_stream = cloudinary.uploader.upload_stream(
           {
-            folder: "profiles",
+            folder: 'profiles',
           },
           async (err, result) => {
             if (!err) {
-              let resp = await profileSchema.findOneAndUpdate(
-                { username: req.params.username },
-                {
-                  image: result.secure_url,
-                }
-              );
-              if (resp) res.status(200).send("Done");
-              else res.sendStatus(400);
+              req.user.image = result.secure_url;
+              await req.user.save({ validateBeforeSave: false });
+
+              res.status(200).send('Done');
             }
           }
         );
@@ -136,7 +120,7 @@ router.post(
       } else {
         const err = new Error();
         err.httpStatusCode = 400;
-        err.message = "Image file missing!";
+        err.message = 'Image file missing!';
         next(err);
       }
     } catch (error) {
@@ -145,25 +129,22 @@ router.post(
   }
 );
 router.post(
-  "/:username/upload/cover",
-  upload.single("cover"),
+  '/:username/upload/cover',
+  isUser,
+  upload.single('cover'),
   async (req, res, next) => {
     try {
       if (req.file) {
         const cld_upload_stream = cloudinary.uploader.upload_stream(
           {
-            folder: "covers",
+            folder: 'covers',
           },
           async (err, result) => {
             if (!err) {
-              let resp = await profileSchema.findOneAndUpdate(
-                { username: req.params.username },
-                {
-                  cover: result.secure_url,
-                }
-              );
-              if (resp) res.status(200).send("Done");
-              else res.sendStatus(400);
+              req.user.cover = result.secure_url;
+              await req.user.save(v);
+
+              res.status(200).send('Done');
             }
           }
         );
@@ -171,7 +152,7 @@ router.post(
       } else {
         const err = new Error();
         err.httpStatusCode = 400;
-        err.message = "Image file missing!";
+        err.message = 'Image file missing!';
         next(err);
       }
     } catch (error) {
@@ -180,7 +161,7 @@ router.post(
   }
 );
 
-router.get("/:username/pdf", async (req, res, next) => {
+router.get('/:username/pdf', isUser, async (req, res, next) => {
   try {
     const profile = await profileSchema.findOne({
       username: req.params.username,
@@ -189,29 +170,29 @@ router.get("/:username/pdf", async (req, res, next) => {
     const doc = new pdfdocument();
     const url = profile.image;
     res.setHeader(
-      "Content-Disposition",
+      'Content-Disposition',
       `attachment; filename=${profile.name}.pdf`
     );
 
     if (url.length > 0) {
       const response = await axios.get(url, {
-        responseType: "arraybuffer",
+        responseType: 'arraybuffer',
       });
-      const img = new Buffer(response.data, "base64");
+      const img = new Buffer(response.data, 'base64');
       doc.image(img, 88, 30, {
         fit: [100, 100],
       });
     }
 
-    doc.font("Helvetica-Bold");
+    doc.font('Helvetica-Bold');
     doc.fontSize(18);
 
     doc.text(`${profile.name} ${profile.surname}`, 100, 140, {
       width: 410,
-      align: "center",
+      align: 'center',
     });
     doc.fontSize(12);
-    doc.font("Helvetica");
+    doc.font('Helvetica');
     doc.text(
       `
     ${profile.title}
@@ -220,13 +201,13 @@ router.get("/:username/pdf", async (req, res, next) => {
       360,
       180,
       {
-        align: "left",
+        align: 'left',
       }
     );
     doc.fontSize(18);
-    doc.text("Experiences", 100, 270, {
+    doc.text('Experiences', 100, 270, {
       width: 410,
-      align: "center",
+      align: 'center',
     });
     doc.fontSize(12);
     const start = async () => {
@@ -242,14 +223,14 @@ router.get("/:username/pdf", async (req, res, next) => {
         `),
         {
           width: 410,
-          align: "center",
+          align: 'center',
         }
       );
     };
     await start();
 
     let grad = doc.linearGradient(50, 0, 350, 100);
-    grad.stop(0, "#0077B5").stop(1, "#004451");
+    grad.stop(0, '#0077B5').stop(1, '#004451');
 
     doc.rect(0, 0, 70, 1000);
     doc.fill(grad);
@@ -262,38 +243,63 @@ router.get("/:username/pdf", async (req, res, next) => {
   }
 });
 
-router.delete("/:username", async (req, res, next) => {
+router.delete('/me', isUser, async (req, res, next) => {
   try {
-    const profile = await profileSchema.findOneAndDelete({
-      username: req.params.username,
+    await req.user.remove();
+    res.send('Deleted');
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/login', async (req, res, next) => {
+  try {
+    const findUser = await ProfileModel.findOne({
+      $or: [
+        { username: req.body.username, password: req.body.password },
+        { email: req.body.username, password: req.body.password },
+      ],
     });
-    if (profile) {
-      const findExp = await ExperienceModel.find({
-        username: profile.username,
+    if (findUser) {
+      const token = await generateTokens(findUser);
+      res.cookie('token', token, {
+        path: '/',
+        httpOnly: true,
+        sameSite: true,
       });
-
-      const findUser = await UserModel.findOneAndDelete({
-        username: profile.username,
-      });
-
-      await findExp.forEach(async (exp) => {
-        fs.unlink(join(expPath, `${exp._id}.png`));
-        await ExperienceModel.findByIdAndDelete(exp._id);
-      });
-
-      if (fs.existsSync(join(imagePath, `${profile._id}.png`))) {
-        fs.unlink(join(imagePath, `${profile._id}.png`));
-      }
-      if (fs.existsSync(join(imagePath, `${req.params.username}Cover.png`))) {
-        fs.unlink(join(imagePath, `${req.params.username}Cover.png`));
-      }
-
-      res.send("Deleted");
+      res.send(token);
     } else {
-      const error = new Error(`profile with id ${req.params.id} not found`);
-      error.httpStatusCode = 404;
-      next(error);
+      res.status(404).send('Incorrent email or password');
+      console.log('Not Found');
     }
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/signup', async (req, res, next) => {
+  try {
+    const userBody = new ProfileModel(req.body);
+    const addUser = await userBody.save();
+    if (addUser) {
+      res.status(201).send(addUser._id);
+    } else {
+      const err = new Error();
+      err.message = 'Something went wrong';
+      err.httpStatusCode = 400;
+      next(err);
+    }
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.post('/logout', isUser, async (req, res, next) => {
+  try {
+    req.user.token = '';
+    await req.user.save({ validateBeforeSave: false });
+
+    res.redirect('/');
   } catch (error) {
     next(error);
   }

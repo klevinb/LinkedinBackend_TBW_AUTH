@@ -1,16 +1,16 @@
-const express = require("express");
-const listEndpoints = require("express-list-endpoints");
-const cors = require("cors");
-const { join } = require("path");
-const mongoose = require("mongoose");
-const apiRoutes = require("./routes/api");
-const authorizeRoutes = require("./routes/authorization");
-const { notFound, badRequest, generalError } = require("./errorHandlers");
-const { verifyToken } = require("./routes/authorization/util");
-const helmet = require("helmet");
+const express = require('express');
+const listEndpoints = require('express-list-endpoints');
+const cors = require('cors');
+const { join } = require('path');
+const mongoose = require('mongoose');
+const apiRoutes = require('./routes/api');
+const { notFound, badRequest, generalError } = require('./errorHandlers');
+const { verifyToken } = require('./routes/authorization/util');
+const helmet = require('helmet');
+const cookieParse = require('cookie-parser');
 
 const port = process.env.PORT || 3003;
-const publicPath = join(__dirname, "../public");
+const publicPath = join(__dirname, '../public');
 
 const server = express();
 server.use(helmet());
@@ -22,17 +22,17 @@ const corsOptions = {
     if (whiteList.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      callback(new Error('Not allowed by CORS'));
     }
   },
 };
 
+server.use(cookieParse());
 server.use(express.json());
-server.use(cors());
+server.use(cors(whiteList));
 server.use(express.static(publicPath));
 
-server.use("/api", apiRoutes);
-server.use("/user", authorizeRoutes);
+server.use('/api', apiRoutes);
 
 server.use(notFound);
 server.use(badRequest);
