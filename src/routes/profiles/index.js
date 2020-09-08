@@ -29,19 +29,6 @@ const upload = multer();
 const imagePath = path.join(__dirname, '../../../public/img/profiles');
 const expPath = path.join(__dirname, '../../../public/img/experiences');
 
-// oAuth
-router.get(
-  '/auth/linkedin',
-  passport.authenticate('linkedin', { state: 'SOME STATE' })
-);
-router.get(
-  '/auth/linkedin/callback',
-  passport.authenticate('linkedin', { failureRedirect: '/login' }),
-  function (req, res) {
-    res.redirect('/');
-  }
-);
-
 router.get('/', isUser, async (req, res, next) => {
   try {
     const query = q2m(req.query);
@@ -348,6 +335,27 @@ router.get(
     }
   }
 );
-// router.post('/user/singin/facebook', passport.authenticate('facebookToken',{session:false}))
+
+// oAuth
+router.get('/auth/linkedin', passport.authenticate('linkedin'));
+
+router.get(
+  '/auth/linkedin/callback',
+  passport.authenticate('linkedin', { failureRedirect: '/login' }),
+  async (req, res, next) => {
+    try {
+      const token = req.user.token;
+      res.cookie('token', token, {
+        httpOnly: true,
+      });
+
+      // res.status(200).redirect('/');
+      res.status(200).send('Done');
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
+  }
+);
 
 module.exports = router;

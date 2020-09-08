@@ -39,15 +39,27 @@ passport.use(
           profile.name.familyName.toLocaleLowerCase().slice(0, 1),
       };
       try {
-        const user = await UserModel.findOne({ facebookId: profile.id });
-        if (user) {
-          const token = await generateTokens(user);
+        const findUser = await UserModel.findOne({ facebookId: profile.id });
+        if (findUser) {
+          const token = await generateTokens(findUser);
           done(null, token);
         } else {
-          const createUser = new UserModel(User);
-          const user = await createUser.save();
-          const token = await generateTokens(user);
-          done(null, token);
+          const checkUsername = await UserModel.findOne({
+            username: User.username,
+          });
+
+          if (checkUsername) {
+            checkUsername.facebookId = User.facebookId;
+            await checkUsername.save({ validateBeforeSave: false });
+
+            const token = await generateTokens(checkUsername);
+            done(null, token);
+          } else {
+            const createUser = new UserModel(User);
+            const user = await createUser.save();
+            const token = await generateTokens(user);
+            done(null, token);
+          }
         }
       } catch (error) {
         console.log(error);
@@ -63,36 +75,47 @@ passport.use(
     {
       clientID: process.env.LINKEDIN_ID,
       clientSecret: process.env.LINKEDIN_SECRET,
-      callbackURL: 'http://localhost:3005/api/profile/auth/linkedin/callback',
-      profileFields: [
-        'id',
-        'email',
-        'gender',
-        'link',
-        'locale',
-        'name',
-        'timezone',
-        'updated_time',
-        'verified',
-      ],
+      callbackURL: 'http://localhost:3008/api/profile/auth/linkedin/callback',
+      scope: ['r_liteprofile', 'r_emailaddress'],
     },
     async (accessToken, refreshToken, profile, done) => {
-      // const newUser = {
-      //   LinkedinId: profile.id,
-      //   name: profile.name.givenName,
-      //   surname: profile.name.familyName,
-      //   email: profile.emails[0].value,
-      //   role: 'user',
-      //   token: [],
-      // };
+      const User = {
+        linkedinId: profile.id,
+        name: profile.name.givenName,
+        surname: profile.name.familyName,
+        bio: ' ',
+        title: ' ',
+        area: ' ',
+        image: profile.photos[3].value,
+        email: profile.emails[0].value,
+        username:
+          profile.name.givenName.toLocaleLowerCase() +
+          profile.name.familyName.toLocaleLowerCase().slice(0, 1),
+      };
 
       try {
-        console.log(profile);
-        //   const user = await ProfileModel.findOne({ LinkedinId: profile.id });
-        //   if (user) {
-        //     const tokens = await authenticate(user);
-        //     done(null, { user, tokens });
-        //   } else [console.log(profile)];
+        const findUser = await UserModel.findOne({ linkedinId: profile.id });
+        if (findUser) {
+          const token = await generateTokens(findUser);
+          done(null, token);
+        } else {
+          const checkUsername = await UserModel.findOne({
+            username: User.username,
+          });
+
+          if (checkUsername) {
+            checkUsername.linkedinId = User.linkedinId;
+            await checkUsername.save({ validateBeforeSave: false });
+
+            const token = await generateTokens(checkUsername);
+            done(null, token);
+          } else {
+            const createUser = new UserModel(User);
+            const user = await createUser.save();
+            const token = await generateTokens(user);
+            done(null, token);
+          }
+        }
       } catch (error) {
         console.log(error);
         done(error);

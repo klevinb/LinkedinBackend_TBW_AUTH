@@ -61,6 +61,9 @@ const profileSchema = new Schema(
     facebookId: {
       type: String,
     },
+    linkedinId: {
+      type: String,
+    },
     cover: {
       type: String,
     },
