@@ -13,9 +13,12 @@ const cloudinary = require('cloudinary').v2;
 const streamifier = require('streamifier');
 const axios = require('axios');
 
+
+
 // Authentication && Authorization
 const { isUser } = require('../authorization/middleware');
 const { generateTokens } = require('../authorization/util');
+const passport = require('passport');
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -304,5 +307,31 @@ router.post('/logout', isUser, async (req, res, next) => {
     next(error);
   }
 });
+router.get('/auth/facebook', passport.authenticate('facebook',{scope:["email"]}),async(req,res,next)=> {
+console.log("herrrr")
+}
+)
+
+
+router.get('/auth/facebook/redirect',
+passport.authenticate('facebook'),
+async(req,res,next)=>{
+try{
+  const token = req.user.token
+res.cookie("token",token,{
+  httpOnly:true,
+})
+
+  res.status(200).redirect("https://localhost:3004/api/profile/me")
+
+}catch(error){
+  console.log(error)
+  next(error)
+}
+
+
+})
+// router.post('/user/singin/facebook', passport.authenticate('facebookToken',{session:false}))
+
 
 module.exports = router;

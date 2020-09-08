@@ -57,9 +57,13 @@ const profileSchema = new Schema(
     image: {
       type: String,
     },
+    facebookId:{
+      type:String
+    },
     cover: {
       type: String,
     },
+
     about: {
       type: String,
     },

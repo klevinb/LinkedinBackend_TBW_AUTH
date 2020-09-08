@@ -8,8 +8,10 @@ const { notFound, badRequest, generalError } = require('./errorHandlers');
 const { verifyToken } = require('./routes/authorization/util');
 const helmet = require('helmet');
 const cookieParse = require('cookie-parser');
+ require("../src/routes/authorization/facebook/facebook")
+const passport =require("passport")
 
-const port = process.env.PORT || 3003;
+const port = process.env.PORT || 3004;
 const publicPath = join(__dirname, '../public');
 
 const server = express();
@@ -31,6 +33,8 @@ server.use(cookieParse());
 server.use(express.json());
 server.use(cors(whiteList));
 server.use(express.static(publicPath));
+server.use(passport.initialize())
+server.use(passport.session())
 
 server.use('/api', apiRoutes);
 
