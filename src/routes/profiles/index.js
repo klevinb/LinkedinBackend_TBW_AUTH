@@ -8,6 +8,7 @@ const fs = require('fs-extra');
 const pdfdocument = require('pdfkit');
 const { join } = require('path');
 const ExperienceModel = require('../experience/schema');
+const PostsModel = require('../posts/schema');
 const ProfileModel = require('./schema');
 const cloudinary = require('cloudinary').v2;
 const streamifier = require('streamifier');
@@ -249,6 +250,8 @@ router.delete('/me', isUser, async (req, res, next) => {
     await ExperienceModel.collection.deleteMany({
       username: req.user.username,
     });
+    await PostsModel.collection.deleteMany({ username: req.user.username });
+
     res.send('Deleted');
   } catch (error) {
     next(error);
