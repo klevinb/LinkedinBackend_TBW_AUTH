@@ -8,7 +8,6 @@ const isUser = async (req, res, next) => {
     const user = await ProfileModel.findById(credentials._id);
 
     if (user) {
-      const sendUser = await ProfileModel.findOne({ username: user.username });
       req.user = sendUser;
       next();
     } else {
