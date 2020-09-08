@@ -8,9 +8,9 @@ const LinkedInStrategy = require('passport-linkedin-oauth2').Strategy;
 passport.use(
   new Strategy(
     {
-      clientID: '2445152759114026',
-      clientSecret: '3de6c334d9df9f596afddc3f7c86dccf',
-      callbackURL: 'http://localhost:3008/api/profile/auth/facebook/redirect',
+      clientID: process.env.FACEBOOK_APP_ID,
+      clientSecret: process.env.FACEBOOK_APP_SECRET,
+      callbackURL: process.env.FACEBOOK_REDIRECT,
       profileFields: [
         'id',
         'email',
@@ -75,7 +75,7 @@ passport.use(
     {
       clientID: process.env.LINKEDIN_ID,
       clientSecret: process.env.LINKEDIN_SECRET,
-      callbackURL: 'http://localhost:3008/api/profile/auth/linkedin/callback',
+      callbackURL: process.env.LINKEDIN_REDIRECT,
       scope: ['r_liteprofile', 'r_emailaddress'],
     },
     async (accessToken, refreshToken, profile, done) => {
