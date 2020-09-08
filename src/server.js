@@ -10,6 +10,7 @@ const helmet = require('helmet');
 const cookieParse = require('cookie-parser');
 const passport = require('passport');
 const { initialize } = require('passport');
+require('./routes/profiles/oAuth');
 
 const port = process.env.PORT || 3003;
 const publicPath = join(__dirname, '../public');
@@ -35,6 +36,7 @@ server.use(cors(whiteList));
 server.use(express.static(publicPath));
 
 server.use(passport.initialize());
+server.use(passport.session());
 
 server.use('/api', apiRoutes);
 
