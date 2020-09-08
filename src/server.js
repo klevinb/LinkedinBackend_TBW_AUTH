@@ -1,4 +1,5 @@
 const express = require('express');
+const http = require('http');
 const listEndpoints = require('express-list-endpoints');
 const cors = require('cors');
 const { join } = require('path');
@@ -8,12 +9,17 @@ const { notFound, badRequest, generalError } = require('./errorHandlers');
 const { verifyToken } = require('./routes/authorization/util');
 const helmet = require('helmet');
 const cookieParse = require('cookie-parser');
+const chat = require('./routes/chat/index');
 
 const port = process.env.PORT || 3003;
 const publicPath = join(__dirname, '../public');
 
-const server = express();
-server.use(helmet());
+const app = express();
+app.use(helmet());
+
+const server = http.createServer(app);
+
+chat(server);
 
 const whiteList = process.env.WL;
 
@@ -27,18 +33,18 @@ const corsOptions = {
   },
 };
 
-server.use(cookieParse());
-server.use(express.json());
-server.use(cors(whiteList));
-server.use(express.static(publicPath));
+app.use(cookieParse());
+app.use(express.json());
+app.use(cors(whiteList));
+app.use(express.static(publicPath));
 
-server.use('/api', apiRoutes);
+app.use('/api', apiRoutes);
 
-server.use(notFound);
-server.use(badRequest);
-server.use(generalError);
+app.use(notFound);
+app.use(badRequest);
+app.use(generalError);
 
-console.log(listEndpoints(server));
+console.log(listEndpoints(app));
 
 mongoose
   .connect(

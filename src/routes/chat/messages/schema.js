@@ -6,11 +6,11 @@ const MessageSchema = new Schema({
     type: String,
     required: true,
   },
-  text: {
+  to: {
     type: String,
     required: true,
   },
-  to: {
+  text: {
     type: String,
     required: true,
   },
