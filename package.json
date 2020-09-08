@@ -38,6 +38,7 @@
     "pump": "^3.0.0",
     "query-to-mongo": "^0.10.1",
     "request": "^2.88.2",
+    "socket.io": "^2.3.0",
     "streamifier": "^0.1.1",
     "validator": "^13.1.1"
   },

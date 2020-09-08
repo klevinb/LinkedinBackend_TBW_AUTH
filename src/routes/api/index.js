@@ -1,14 +1,15 @@
-const express = require("express");
-const expRoutes = require("../experience");
-const profileRoutes = require("../profiles");
-const postRoutes = require("../posts");
-const commentRoutes = require("../comments");
+const express = require('express');
+const expRoutes = require('../experience');
+const profileRoutes = require('../profiles');
+const postRoutes = require('../posts');
+const commentRoutes = require('../comments');
+const chatRoutes = require('../chat');
 
 const router = express.Router();
 
-router.use("/profile", profileRoutes);
-router.use("/profile", expRoutes);
-router.use("/posts", postRoutes);
-router.use("/comments", commentRoutes);
+router.use('/profile', profileRoutes);
+router.use('/profile', expRoutes);
+router.use('/posts', postRoutes);
+router.use('/comments', commentRoutes);
 
 module.exports = router;
