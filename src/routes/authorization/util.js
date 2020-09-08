@@ -6,7 +6,7 @@ const generateTokens = async (user) => {
     const token = await generateJWT({ _id: user._id });
     const newUser = await ProfileModel.findById(user._id);
     newUser.token = token;
-    await ProfileModel.findByIdAndUpdate(user._id, newUser);
+    await newUser.save({ validateBeforeSave: false });
     return { token };
   } catch (error) {
     console.log(error);

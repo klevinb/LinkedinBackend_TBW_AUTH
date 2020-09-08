@@ -1,58 +1,67 @@
-const passport = require("passport")
-const {Strategy} = require("passport-facebook")
-const UserModel = require("../../profiles/schema")
-const {generateTokens} = require("../util")
-
-
+const passport = require('passport');
+const { Strategy } = require('passport-facebook');
+const UserModel = require('../../profiles/schema');
+const { generateTokens } = require('../util');
 
 passport.use(
-    
-    new Strategy(
-        {
-            clientID: process.env.FACEBOOK_APP_ID,
-            clientSecret: process.env.FACEBOOK_APP_SECRET, 
-            callbackURL: "http://localhost:3004/api/profile/auth/facebook/redirect",
-            profileFields: ['id', 'email', 'gender', 'link', 'locale', 'name', 'timezone', 'updated_time', 'verified']
+  new Strategy(
+    {
+      clientID: '2445152759114026',
+      clientSecret: '3de6c334d9df9f596afddc3f7c86dccf',
+      callbackURL: 'http://localhost:3008/api/profile/auth/facebook/redirect',
+      profileFields: [
+        'id',
+        'email',
+        'link',
+        'locale',
+        'name',
+        'timezone',
+        'updated_time',
+        'verified',
+        'gender',
+        'displayName',
+      ],
+    },
 
-        },
-
-       async (accesToken,refreshToken,profile,done)=>{
-           console.log(profile,"jsahdjlashljabsdkjhcljabsjbd")
+    async (accesToken, refreshToken, profile, done) => {
       const User = {
-          facebookId:profile.id,
-          username:profile.givenName,
-          name:profile.givenName,
-          email:profile.emails[0].value,
-          surname:profile.familyName,
-          password:profile.id,
-          token:""
-      }
-try{
-const user = await UserModel.findOne({facebookId:profile.id})
-if(user){
-const token = await generateTokens(user)
-done(null,{user,token})
-}else{
-    createUser =await UserModel.create(User)
-    const tokens = await generateTokens(createUser)
-    done(null,{user,tokens}) 
-}
-}catch(error){
-    console.log(error)
-    done(error)
-}
-
+        facebookId: profile.id,
+        name: profile.name.givenName,
+        surname: profile.name.familyName,
+        bio: ' ',
+        title: ' ',
+        area: ' ',
+        email: profile.emails[0].value,
+        username:
+          profile.name.givenName.toLocaleLowerCase() +
+          profile.name.familyName.toLocaleLowerCase().slice(0, 1),
+      };
+      try {
+        const user = await UserModel.findOne({ facebookId: profile.id });
+        if (user) {
+          const token = await generateTokens(user);
+          done(null, token);
+        } else {
+          const createUser = new UserModel(User);
+          const user = await createUser.save();
+          const token = await generateTokens(user);
+          done(null, token);
         }
-    )
-)
+      } catch (error) {
+        console.log(error);
+        done(error);
+      }
+    }
+  )
+);
 
-passport.serializeUser(function(user,done){
-    done(null,user)
-})
+passport.serializeUser(function (user, done) {
+  done(null, user);
+});
 
-passport.deserializeUser(function(user,done){
-    done(null,user)
-})
+passport.deserializeUser(function (user, done) {
+  done(null, user);
+});
 
 // passport.use('facebookToken', new FacebookStrategy({
 //     clientID:process.env.clientID,
@@ -63,8 +72,8 @@ passport.deserializeUser(function(user,done){
 //     if(await UserModel.findOne({'facebook_id':profile.id}))
 //     return("This user already exist in mongo")
 
-//  const email = profile.email[0].value 
-//  const {id:facebook_id,displayName:username} = profile 
+//  const email = profile.email[0].value
+//  const {id:facebook_id,displayName:username} = profile
 // const user = await UserModel.create({
 //     email,facebook_id,username
 // })
@@ -73,7 +82,5 @@ passport.deserializeUser(function(user,done){
 // }catch(error){
 //     done(error,false,error.message)
 // }
-
-
 
 // }))

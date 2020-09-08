@@ -58,8 +58,8 @@ const profileSchema = new Schema(
     image: {
       type: String,
     },
-    facebookId:{
-      type:String
+    facebookId: {
+      type: String,
     },
     cover: {
       type: String,
@@ -82,7 +82,6 @@ const profileSchema = new Schema(
     },
     password: {
       type: String,
-      required: true,
     },
     token: {
       type: String,
