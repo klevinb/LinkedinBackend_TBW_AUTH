@@ -36,6 +36,9 @@ server.use(express.static(publicPath));
 server.use(passport.initialize())
 server.use(passport.session())
 
+server.use(passport.initialize());
+server.use(passport.session());
+
 server.use('/api', apiRoutes);
 
 server.use(notFound);

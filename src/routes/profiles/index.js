@@ -31,6 +31,19 @@ const upload = multer();
 const imagePath = path.join(__dirname, '../../../public/img/profiles');
 const expPath = path.join(__dirname, '../../../public/img/experiences');
 
+// oAuth
+router.get(
+  '/auth/linkedin',
+  passport.authenticate('linkedin', { state: 'SOME STATE' })
+);
+router.get(
+  '/auth/linkedin/callback',
+  passport.authenticate('linkedin', { failureRedirect: '/login' }),
+  function (req, res) {
+    res.redirect('/');
+  }
+);
+
 router.get('/', isUser, async (req, res, next) => {
   try {
     const query = q2m(req.query);
