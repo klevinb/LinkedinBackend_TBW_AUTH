@@ -1,5 +1,5 @@
-const jwt = require('jsonwebtoken');
-const ProfileModel = require('../profiles/schema');
+const jwt = require("jsonwebtoken");
+const ProfileModel = require("../profiles/schema");
 
 const generateTokens = async (user) => {
   try {
@@ -19,7 +19,7 @@ const generateJWT = (payload) =>
     jwt.sign(
       payload,
       process.env.SECRET_KEYJWT,
-      { expiresIn: '1d' },
+      { expiresIn: "1d" },
       (err, token) => {
         if (err) rej(err);
         res(token);
@@ -34,6 +34,20 @@ const verifyGeneratedJWT = (token) =>
       res(decoded);
     })
   );
+
+const authenticate = async (user) => {
+  try {
+    // generate tokens
+    const token = await generateJWT({ _id: user._id });
+    const newUser = await User.findById(user._id);
+    newUser.token.push({ token: token });
+    await newUser.save();
+    return { token: token };
+  } catch (error) {
+    console.log(error);
+    throw new Error(error);
+  }
+};
 
 // const generateRefreshJWT = (payload)=>
 // new Promise((res,rej)=>
@@ -60,4 +74,5 @@ const verifyGeneratedJWT = (token) =>
 module.exports = {
   generateTokens,
   verifyGeneratedJWT,
+  authenticate,
 };

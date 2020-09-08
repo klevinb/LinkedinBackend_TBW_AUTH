@@ -93,11 +93,17 @@ const profileSchema = new Schema(
 );
 
 profileSchema.statics.findByCredentials = async (credentials, password) => {
-  // we can login using uername/email and we name it credentials
+  // we can login using username/email and we name it credentials
 
   const user = await ProfileModel.findOne({
     $or: [{ username: credentials }, { email: credentials }],
   });
+
+  if (!user) {
+    const error = new Error('Username/Password do not match!');
+    error.httpStatusCode = 404;
+    throw error;
+  }
 
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {

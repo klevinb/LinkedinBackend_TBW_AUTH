@@ -3,6 +3,8 @@ const { Strategy } = require('passport-facebook');
 const UserModel = require('../../profiles/schema');
 const { generateTokens } = require('../util');
 
+const LinkedInStrategy = require('passport-linkedin-oauth2').Strategy;
+
 passport.use(
   new Strategy(
     {
@@ -55,6 +57,50 @@ passport.use(
   )
 );
 
+passport.use(
+  'linkedin',
+  new LinkedInStrategy(
+    {
+      clientID: process.env.LINKEDIN_ID,
+      clientSecret: process.env.LINKEDIN_SECRET,
+      callbackURL: 'http://localhost:3005/api/profile/auth/linkedin/callback',
+      profileFields: [
+        'id',
+        'email',
+        'gender',
+        'link',
+        'locale',
+        'name',
+        'timezone',
+        'updated_time',
+        'verified',
+      ],
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      // const newUser = {
+      //   LinkedinId: profile.id,
+      //   name: profile.name.givenName,
+      //   surname: profile.name.familyName,
+      //   email: profile.emails[0].value,
+      //   role: 'user',
+      //   token: [],
+      // };
+
+      try {
+        console.log(profile);
+        //   const user = await ProfileModel.findOne({ LinkedinId: profile.id });
+        //   if (user) {
+        //     const tokens = await authenticate(user);
+        //     done(null, { user, tokens });
+        //   } else [console.log(profile)];
+      } catch (error) {
+        console.log(error);
+        done(error);
+      }
+    }
+  )
+);
+
 passport.serializeUser(function (user, done) {
   done(null, user);
 });
@@ -62,25 +108,3 @@ passport.serializeUser(function (user, done) {
 passport.deserializeUser(function (user, done) {
   done(null, user);
 });
-
-// passport.use('facebookToken', new FacebookStrategy({
-//     clientID:process.env.clientID,
-//     clientSecret:process.env.clientSecret,
-// },
-// async(accessToken,refreshToken,profile,done)=>{
-// try{
-//     if(await UserModel.findOne({'facebook_id':profile.id}))
-//     return("This user already exist in mongo")
-
-//  const email = profile.email[0].value
-//  const {id:facebook_id,displayName:username} = profile
-// const user = await UserModel.create({
-//     email,facebook_id,username
-// })
-// await user.save()
-// console.log(user)
-// }catch(error){
-//     done(error,false,error.message)
-// }
-
-// }))
