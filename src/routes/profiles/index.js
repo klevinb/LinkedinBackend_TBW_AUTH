@@ -9,6 +9,7 @@ const pdfdocument = require('pdfkit');
 const { join } = require('path');
 const ExperienceModel = require('../experience/schema');
 const PostsModel = require('../posts/schema');
+const MessageModel = require('../chat/messages/schema');
 const ProfileModel = require('./schema');
 const cloudinary = require('cloudinary').v2;
 const streamifier = require('streamifier');
@@ -27,6 +28,12 @@ cloudinary.config({
 const upload = multer();
 const imagePath = path.join(__dirname, '../../../public/img/profiles');
 const expPath = path.join(__dirname, '../../../public/img/experiences');
+
+router.get('/messages/:username', async (req, res) => {
+  const messages = await MessageModel.find({ from: req.params.username });
+
+  res.send(messages);
+});
 
 router.get('/', isUser, async (req, res, next) => {
   try {
