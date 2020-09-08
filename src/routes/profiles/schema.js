@@ -1,6 +1,7 @@
 const { Schema } = require('mongoose');
 const mongoose = require('mongoose');
 const validation = require('validator');
+const bcrypt = require('bcrypt');
 
 const profileSchema = new Schema(
   {
@@ -91,6 +92,31 @@ const profileSchema = new Schema(
     timestamps: true,
   }
 );
+
+profileSchema.statics.findByCredentials = async (credentials, password) => {
+  // we can login using uername/email and we name it credentials
+
+  const user = await ProfileModel.findOne({
+    $or: [{ username: credentials }, { email: credentials }],
+  });
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    const error = new Error('Unable to login');
+    error.httpStatusCode = 401;
+    throw error;
+  } else {
+    return user;
+  }
+};
+
+profileSchema.pre('save', async function (next) {
+  const user = this;
+  if (user.isModified('password')) {
+    user.password = await bcrypt.hash(user.password, 10);
+  }
+  next();
+});
 
 profileSchema.methods.toJSON = function () {
   var obj = this.toObject();

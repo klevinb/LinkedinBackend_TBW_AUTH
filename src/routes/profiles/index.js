@@ -8,6 +8,7 @@ const fs = require('fs-extra');
 const pdfdocument = require('pdfkit');
 const { join } = require('path');
 const ExperienceModel = require('../experience/schema');
+const PostsModel = require('../posts/schema');
 const ProfileModel = require('./schema');
 const cloudinary = require('cloudinary').v2;
 const streamifier = require('streamifier');
@@ -249,6 +250,11 @@ router.get('/:username/pdf', isUser, async (req, res, next) => {
 router.delete('/me', isUser, async (req, res, next) => {
   try {
     await req.user.remove();
+    await ExperienceModel.collection.deleteMany({
+      username: req.user.username,
+    });
+    await PostsModel.collection.deleteMany({ username: req.user.username });
+
     res.send('Deleted');
   } catch (error) {
     next(error);
@@ -257,12 +263,13 @@ router.delete('/me', isUser, async (req, res, next) => {
 
 router.post('/login', async (req, res, next) => {
   try {
-    const findUser = await ProfileModel.findOne({
-      $or: [
-        { username: req.body.username, password: req.body.password },
-        { email: req.body.username, password: req.body.password },
-      ],
-    });
+    const { credentials, password } = req.body;
+
+    const findUser = await ProfileModel.findByCredentials(
+      credentials,
+      password
+    );
+
     if (findUser) {
       const token = await generateTokens(findUser);
       res.cookie('token', token, {

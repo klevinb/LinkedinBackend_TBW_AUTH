@@ -1,25 +1,25 @@
-const { Schema } = require("mongoose");
-const mongoose = require("mongoose");
-const { profile } = require("../profiles/schema");
+const { Schema } = require('mongoose');
+const mongoose = require('mongoose');
+const { profile } = require('../profiles/schema');
 //const v = require("validator")
 
 const PostSchema = new Schema(
   {
     text: {
       type: String,
-      required: [true, "Please put the text for the post"],
+      required: [true, 'Please put the text for the post'],
     },
     image: String,
     username: {
       type: String,
-      required: [true, "Please add the name of user"],
+      required: [true, 'Please add the name of user'],
     },
     user: {
       type: Schema.Types.ObjectId,
-      ref: "profile",
-      required: [true, "Please add the id of user"],
+      ref: 'profile',
+      required: [true, 'Please add the id of user'],
     },
-    likes: [{ type: Schema.Types.ObjectId, ref: "profile" }],
+    likes: [{ type: Schema.Types.ObjectId, ref: 'profile' }],
   },
   { timestamps: true }
 );
@@ -34,5 +34,5 @@ const PostSchema = new Schema(
     next()
   }
 }) */
-const PostsModel = mongoose.model("Post", PostSchema);
-module.exports = { PostsModel, PostSchema };
+const PostsModel = mongoose.model('Post', PostSchema);
+module.exports = PostsModel;
