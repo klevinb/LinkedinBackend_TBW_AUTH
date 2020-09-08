@@ -324,12 +324,13 @@ router.get('/auth/facebook/redirect',
 passport.authenticate('facebook'),
 async(req,res,next)=>{
 try{
+  console.log(req.user)
   const token = req.user.token
 res.cookie("token",token,{
   httpOnly:true,
 })
 
-  res.status(200).redirect("https://localhost:3004/api/profile/me")
+  res.status(200).redirect("/")
 
 }catch(error){
   console.log(error)

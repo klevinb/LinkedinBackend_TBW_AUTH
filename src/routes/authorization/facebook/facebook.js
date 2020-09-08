@@ -11,19 +11,19 @@ passport.use(
         {
             clientID: process.env.FACEBOOK_APP_ID,
             clientSecret: process.env.FACEBOOK_APP_SECRET, 
-            callbackURL: "https://localhost:3004/api/profile/auth/facebook/redirect",
-            // profileFields: ['id', 'email', 'gender', 'link', 'locale', 'name', 'timezone', 'updated_time', 'verified']
+            callbackURL: "http://localhost:3004/api/profile/auth/facebook/redirect",
+            profileFields: ['id', 'email', 'gender', 'link', 'locale', 'name', 'timezone', 'updated_time', 'verified']
 
         },
 
        async (accesToken,refreshToken,profile,done)=>{
-           console.log("here")
+           console.log(profile,"jsahdjlashljabsdkjhcljabsjbd")
       const User = {
           facebookId:profile.id,
-          username:profile.name,
-          name:profile.name,
+          username:profile.givenName,
+          name:profile.givenName,
           email:profile.emails[0].value,
-          surname:profile.name.familyName,
+          surname:profile.familyName,
           password:profile.id,
           token:""
       }
