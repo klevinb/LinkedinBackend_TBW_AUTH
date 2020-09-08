@@ -8,6 +8,8 @@ const { notFound, badRequest, generalError } = require('./errorHandlers');
 const { verifyToken } = require('./routes/authorization/util');
 const helmet = require('helmet');
 const cookieParse = require('cookie-parser');
+const passport = require('passport');
+const { initialize } = require('passport');
 
 const port = process.env.PORT || 3003;
 const publicPath = join(__dirname, '../public');
@@ -31,6 +33,8 @@ server.use(cookieParse());
 server.use(express.json());
 server.use(cors(whiteList));
 server.use(express.static(publicPath));
+
+server.use(passport.initialize());
 
 server.use('/api', apiRoutes);
 
