@@ -42,7 +42,7 @@ passport.use(
         const findUser = await UserModel.findOne({ facebookId: profile.id });
         if (findUser) {
           const token = await generateTokens(findUser);
-          done(null, token);
+          done(null, { token: token.token, username: findUser.username });
         } else {
           const checkUsername = await UserModel.findOne({
             username: User.username,
@@ -53,12 +53,15 @@ passport.use(
             await checkUsername.save({ validateBeforeSave: false });
 
             const token = await generateTokens(checkUsername);
-            done(null, token);
+            done(null, {
+              token: token.token,
+              username: checkUsername.username,
+            });
           } else {
             const createUser = new UserModel(User);
             const user = await createUser.save();
             const token = await generateTokens(user);
-            done(null, token);
+            done(null, { token: token.token, username: user.username });
           }
         }
       } catch (error) {
@@ -97,7 +100,7 @@ passport.use(
         const findUser = await UserModel.findOne({ linkedinId: profile.id });
         if (findUser) {
           const token = await generateTokens(findUser);
-          done(null, token);
+          done(null, { token: token.token, username: findUser.username });
         } else {
           const checkUsername = await UserModel.findOne({
             username: User.username,
@@ -108,12 +111,15 @@ passport.use(
             await checkUsername.save({ validateBeforeSave: false });
 
             const token = await generateTokens(checkUsername);
-            done(null, token);
+            done(null, {
+              token: token.token,
+              username: checkUsername.username,
+            });
           } else {
             const createUser = new UserModel(User);
             const user = await createUser.save();
             const token = await generateTokens(user);
-            done(null, token);
+            done(null, { token: token.token, username: user.username });
           }
         }
       } catch (error) {

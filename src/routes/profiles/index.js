@@ -65,7 +65,6 @@ router.get('/me', isUser, async (req, res, next) => {
 
 router.get('/:username', isUser, async (req, res, next) => {
   try {
-    console.log('here');
     const profile = await profileSchema.findOne({
       username: req.params.username,
     });
@@ -335,7 +334,9 @@ router.get(
         httpOnly: true,
       });
 
-      res.writeHead(301, { Location: 'http://localhost:3000/profiles/me' });
+      res.writeHead(301, {
+        Location: 'http://localhost:3000/profiles/me?' + req.user.username,
+      });
       res.end();
     } catch (error) {
       console.log(error);
@@ -357,7 +358,9 @@ router.get(
         httpOnly: true,
       });
 
-      res.writeHead(301, { Location: 'http://localhost:3000/profiles/me' });
+      res.writeHead(301, {
+        Location: 'http://localhost:3000/profiles/me?' + req.user.username,
+      });
       res.end();
     } catch (error) {
       console.log(error);

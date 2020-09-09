@@ -44,13 +44,13 @@ server.use(express.static(publicPath));
 server.use(passport.initialize());
 server.use(passport.session());
 
-app.use('/api', apiRoutes);
+server.use('/api', apiRoutes);
 
-app.use(notFound);
-app.use(badRequest);
-app.use(generalError);
+server.use(notFound);
+server.use(badRequest);
+server.use(generalError);
 
-console.log(listEndpoints(app));
+console.log(listEndpoints(server));
 
 mongoose
   .connect(
