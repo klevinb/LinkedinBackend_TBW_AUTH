@@ -312,6 +312,8 @@ router.post('/logout', isUser, async (req, res, next) => {
     next(error);
   }
 });
+
+// oAuth
 router.get(
   '/auth/facebook',
   passport.authenticate('facebook', { scope: ['email'] })
@@ -326,9 +328,8 @@ router.get(
       res.cookie('token', token, {
         httpOnly: true,
       });
-
-      // res.status(200).redirect('/');
-      res.status(200).send('Done');
+      res.writeHead(301, { Location: 'https://localhost:3000/' });
+      res.end();
     } catch (error) {
       console.log(error);
       next(error);
@@ -336,7 +337,6 @@ router.get(
   }
 );
 
-// oAuth
 router.get('/auth/linkedin', passport.authenticate('linkedin'));
 
 router.get(
@@ -349,8 +349,8 @@ router.get(
         httpOnly: true,
       });
 
-      // res.status(200).redirect('/');
-      res.status(200).send('Done');
+      res.writeHead(301, { Location: 'https://localhost:3000/' });
+      res.end();
     } catch (error) {
       console.log(error);
       next(error);
