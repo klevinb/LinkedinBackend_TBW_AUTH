@@ -1,5 +1,5 @@
-const jwt = require("jsonwebtoken");
-const ProfileModel = require("../profiles/schema");
+const jwt = require('jsonwebtoken');
+const ProfileModel = require('../profiles/schema');
 
 const generateTokens = async (user) => {
   try {
@@ -19,7 +19,7 @@ const generateJWT = (payload) =>
     jwt.sign(
       payload,
       process.env.SECRET_KEYJWT,
-      { expiresIn: "1d" },
+      { expiresIn: '1d' },
       (err, token) => {
         if (err) rej(err);
         res(token);
@@ -28,26 +28,19 @@ const generateJWT = (payload) =>
   );
 
 const verifyGeneratedJWT = (token) =>
-  new Promise((res, rej) =>
-    jwt.verify(token, process.env.SECRET_KEYJWT, (err, decoded) => {
-      if (err) rej(err);
-      res(decoded);
-    })
-  );
-
-const authenticate = async (user) => {
-  try {
-    // generate tokens
-    const token = await generateJWT({ _id: user._id });
-    const newUser = await User.findById(user._id);
-    newUser.token.push({ token: token });
-    await newUser.save();
-    return { token: token };
-  } catch (error) {
-    console.log(error);
-    throw new Error(error);
-  }
-};
+  new Promise((resolve, reject) => {
+    jwt.verify(token, process.env.SECRET_KEYJWT, (err, credentials) => {
+      if (err) {
+        if (err.name == 'TokenExpiredError') {
+          resolve();
+        } else {
+          reject(err);
+        }
+      } else {
+        resolve(credentials);
+      }
+    });
+  });
 
 // const generateRefreshJWT = (payload)=>
 // new Promise((res,rej)=>
@@ -74,5 +67,4 @@ const authenticate = async (user) => {
 module.exports = {
   generateTokens,
   verifyGeneratedJWT,
-  authenticate,
 };

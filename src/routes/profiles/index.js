@@ -58,6 +58,7 @@ router.get('/me', isUser, async (req, res, next) => {
 
 router.get('/:username', isUser, async (req, res, next) => {
   try {
+    console.log('here');
     const profile = await profileSchema.findOne({
       username: req.params.username,
     });
@@ -99,7 +100,7 @@ router.put('/me', isUser, async (req, res, next) => {
 });
 
 router.post(
-  '/me/upload',
+  '/:username/upload',
   upload.single('profile'),
   isUser,
   async (req, res, next) => {
@@ -144,7 +145,7 @@ router.post(
           async (err, result) => {
             if (!err) {
               req.user.cover = result.secure_url;
-              await req.user.save(v);
+              await req.user.save({ validateBeforeSave: false });
 
               res.status(200).send('Done');
             }
@@ -270,12 +271,10 @@ router.post('/login', async (req, res, next) => {
 
     if (findUser) {
       const token = await generateTokens(findUser);
-      res.cookie('token', token, {
-        path: '/',
+      res.cookie('token', token.token, {
         httpOnly: true,
-        sameSite: true,
       });
-      res.send(token);
+      res.send(findUser.username);
     } else {
       res.status(404).send('Incorrent email or password');
       console.log('Not Found');
@@ -328,7 +327,8 @@ router.get(
       res.cookie('token', token, {
         httpOnly: true,
       });
-      res.writeHead(301, { Location: 'https://localhost:3000/' });
+
+      res.writeHead(301, { Location: 'http://localhost:3000/profiles/me' });
       res.end();
     } catch (error) {
       console.log(error);
@@ -345,11 +345,12 @@ router.get(
   async (req, res, next) => {
     try {
       const token = req.user.token;
+
       res.cookie('token', token, {
         httpOnly: true,
       });
 
-      res.writeHead(301, { Location: 'https://localhost:3000/' });
+      res.writeHead(301, { Location: 'http://localhost:3000/profiles/me' });
       res.end();
     } catch (error) {
       console.log(error);

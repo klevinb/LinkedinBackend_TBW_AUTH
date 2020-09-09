@@ -9,35 +9,38 @@ const { notFound, badRequest, generalError } = require('./errorHandlers');
 const helmet = require('helmet');
 const cookieParse = require('cookie-parser');
 
-require("./routes/authorization/oauth")
-const passport =require("passport")
+require('./routes/authorization/oauth');
+const passport = require('passport');
 
 const port = process.env.PORT || 3005;
 const publicPath = join(__dirname, '../public');
 
 const server = express();
+server.use(cookieParse());
 server.use(helmet());
 
 const whiteList = process.env.WL;
 
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     if (whiteList.indexOf(origin) !== -1) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+// };
+
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (whiteList.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: 'http://localhost:3000',
+  credentials: true,
 };
 
-server.use(cookieParse());
 server.use(express.json());
-server.use(cors(whiteList));
+server.use(cors(corsOptions));
 server.use(express.static(publicPath));
-server.use(passport.initialize())
-server.use(passport.session())
-
-
+server.use(passport.initialize());
+server.use(passport.session());
 
 server.use('/api', apiRoutes);
 
