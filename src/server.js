@@ -38,6 +38,7 @@ server.use(cors(whiteList));
 server.use(express.static(publicPath));
 
 server.use(passport.initialize());
+server.use(passport.session());
 
 server.use("/api", apiRoutes);
 

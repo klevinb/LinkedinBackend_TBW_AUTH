@@ -5,6 +5,7 @@ const profileModel = require("./schema");
 
 
 passport.use(
+  'linkedin',
   new LinkedinStrategy(
     {
       clientID: process.env.linkedin_Id,
@@ -18,7 +19,7 @@ passport.use(
         name: profile.name.givenName,
         surname: profile.name.familyName,
         email: profile.emails[0].value,
-        role: "user",
+        role: 'user',
         token: [],
       };
 
