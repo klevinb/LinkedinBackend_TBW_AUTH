@@ -1,16 +1,18 @@
 const passport = require("passport");
 const LinkedinStrategy = require("passport-linkedin-oauth2").Strategy;
 const profileModel = require("./schema");
-const { authenticate } = require("../authorization/util");
+//const { authenticate } = require("../authorization/util");
+
 
 passport.use(
   new LinkedinStrategy(
     {
       clientID: process.env.linkedin_Id,
       clientSecret: process.env.linkedin_Secret,
-      callbackURL: "http://localhost:3008/api/profile/callback",
+      callbackURL: "http://localhost:3008/api/profile/auth/linkedin/callback",
     },
-    async (token, profile, done) => {
+    async (accessToken, refreshToken,profile, done) => {
+      console.log(profile)
       const newUser = {
         LinkedinId: profile.id,
         name: profile.name.givenName,
@@ -21,10 +23,12 @@ passport.use(
       };
 
       try {
-        const user = await ProfileModel.findOne({ LinkedinId: profile.id });
+        let user = await ProfileModel.findOne({ LinkedinId: profile.id });
         if (user) {
-          const tokens = await authenticate(user);
-          done(null, { user, tokens });
+          done(null, user);
+        }else{
+          user= await user.create(newUser)
+          done(null,user)
         }
       } catch (error) {
         console.log(error);
@@ -34,10 +38,10 @@ passport.use(
   )
 );
 
-passport.serializeUser(function (user, done) {
+passport.serializeUser( (user, done) =>{
   done(null, user);
 });
 
-passport.deserializeUser(function (user, done) {
+passport.deserializeUser( (user, done)=> {
   done(null, user);
 });

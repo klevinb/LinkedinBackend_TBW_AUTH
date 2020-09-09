@@ -80,10 +80,15 @@ const profileSchema = new Schema(
       type: String,
       required: true,
     },
+    linkedinId:{
+      type: String,
+      required:true
+    },
     token: {
       type: String,
     },
   },
+  
   {
     timestamps: true,
   }
