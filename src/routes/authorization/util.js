@@ -6,7 +6,7 @@ const generateTokens = async (user) => {
     const token = await generateJWT({ _id: user._id });
     const newUser = await ProfileModel.findById(user._id);
     newUser.token = token;
-    await ProfileModel.findByIdAndUpdate(user._id, newUser);
+    await newUser.save({ validateBeforeSave: false });
     return { token };
   } catch (error) {
     console.log(error);
@@ -28,12 +28,19 @@ const generateJWT = (payload) =>
   );
 
 const verifyGeneratedJWT = (token) =>
-  new Promise((res, rej) =>
-    jwt.verify(token, process.env.SECRET_KEYJWT, (err, decoded) => {
-      if (err) rej(err);
-      res(decoded);
-    })
-  );
+  new Promise((resolve, reject) => {
+    jwt.verify(token, process.env.SECRET_KEYJWT, (err, credentials) => {
+      if (err) {
+        if (err.name == 'TokenExpiredError') {
+          resolve();
+        } else {
+          reject(err);
+        }
+      } else {
+        resolve(credentials);
+      }
+    });
+  });
 
 // const generateRefreshJWT = (payload)=>
 // new Promise((res,rej)=>

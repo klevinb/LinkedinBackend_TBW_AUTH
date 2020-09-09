@@ -6,37 +6,43 @@ const { join } = require('path');
 const mongoose = require('mongoose');
 const apiRoutes = require('./routes/api');
 const { notFound, badRequest, generalError } = require('./errorHandlers');
-const { verifyToken } = require('./routes/authorization/util');
+
 const helmet = require('helmet');
 const cookieParse = require('cookie-parser');
 const chat = require('./routes/chat/index');
 
-const port = process.env.PORT || 3003;
+require('./routes/authorization/oauth');
+const passport = require('passport');
+
+const port = process.env.PORT || 3005;
 const publicPath = join(__dirname, '../public');
 
-const app = express();
-app.use(helmet());
-
-const server = http.createServer(app);
-
-chat(server);
+const server = express();
+server.use(cookieParse());
+server.use(helmet());
 
 const whiteList = process.env.WL;
 
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     if (whiteList.indexOf(origin) !== -1) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+// };
+
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (whiteList.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: 'http://localhost:3000',
+  credentials: true,
 };
 
-app.use(cookieParse());
-app.use(express.json());
-app.use(cors(whiteList));
-app.use(express.static(publicPath));
+server.use(express.json());
+server.use(cors(corsOptions));
+server.use(express.static(publicPath));
+server.use(passport.initialize());
+server.use(passport.session());
 
 app.use('/api', apiRoutes);
 

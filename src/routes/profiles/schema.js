@@ -58,9 +58,16 @@ const profileSchema = new Schema(
     image: {
       type: String,
     },
+    facebookId: {
+      type: String,
+    },
+    linkedinId: {
+      type: String,
+    },
     cover: {
       type: String,
     },
+
     about: {
       type: String,
     },
@@ -78,7 +85,6 @@ const profileSchema = new Schema(
     },
     password: {
       type: String,
-      required: true,
     },
     token: {
       type: String,
