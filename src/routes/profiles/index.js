@@ -1,23 +1,23 @@
-const express = require('express');
-const q2m = require('query-to-mongo');
-const profileSchema = require('./schema');
+const express = require("express");
+const q2m = require("query-to-mongo");
+const profileSchema = require("./schema");
 const router = express.Router();
-const multer = require('multer');
-const path = require('path');
-const fs = require('fs-extra');
-const pdfdocument = require('pdfkit');
-const { join } = require('path');
-const ExperienceModel = require('../experience/schema');
-const PostsModel = require('../posts/schema');
-const ProfileModel = require('./schema');
-const cloudinary = require('cloudinary').v2;
-const streamifier = require('streamifier');
-const axios = require('axios');
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs-extra");
+const pdfdocument = require("pdfkit");
+const { join } = require("path");
+const ExperienceModel = require("../experience/schema");
+const PostsModel = require("../posts/schema");
+const ProfileModel = require("./schema");
+const cloudinary = require("cloudinary").v2;
+const streamifier = require("streamifier");
+const axios = require("axios");
 
 // Authentication && Authorization
-const { isUser } = require('../authorization/middleware');
-const { generateTokens, authenticate } = require('../authorization/util');
-const passport = require('passport');
+const { isUser } = require("../authorization/middleware");
+const { generateTokens, authenticate } = require("../authorization/util");
+const passport = require("passport");
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -26,23 +26,23 @@ cloudinary.config({
 });
 
 const upload = multer();
-const imagePath = path.join(__dirname, '../../../public/img/profiles');
-const expPath = path.join(__dirname, '../../../public/img/experiences');
+const imagePath = path.join(__dirname, "../../../public/img/profiles");
+const expPath = path.join(__dirname, "../../../public/img/experiences");
 
 // oAuth
 router.get(
-  '/auth/linkedin',
-  passport.authenticate('linkedin', { state: 'SOME STATE' })
+  "/auth/linkedin",
+  passport.authenticate("linkedin", { state: "SOME STATE" })
 );
 router.get(
-  '/auth/linkedin/callback',
-  passport.authenticate('linkedin', { failureRedirect: '/login' }),
+  "/auth/linkedin/callback",
+  passport.authenticate("linkedin", { failureRedirect: "/login" }),
   function (req, res) {
-    res.redirect('/');
+    res.redirect("/");
   }
 );
 
-router.get('/', isUser, async (req, res, next) => {
+router.get("/", isUser, async (req, res, next) => {
   try {
     const query = q2m(req.query);
     const profiles = await profileSchema
@@ -61,7 +61,7 @@ router.get('/', isUser, async (req, res, next) => {
   }
 });
 
-router.get('/me', isUser, async (req, res, next) => {
+router.get("/me", isUser, async (req, res, next) => {
   try {
     res.status(200).send(req.user);
   } catch (error) {
@@ -69,7 +69,7 @@ router.get('/me', isUser, async (req, res, next) => {
   }
 });
 
-router.get('/:username', isUser, async (req, res, next) => {
+router.get("/:username", isUser, async (req, res, next) => {
   try {
     const profile = await profileSchema.findOne({
       username: req.params.username,
@@ -86,7 +86,7 @@ router.get('/:username', isUser, async (req, res, next) => {
   }
 });
 
-router.post('/', async (req, res, next) => {
+router.post("/", async (req, res, next) => {
   try {
     const newProfile = new profileSchema(req.body);
     const response = await newProfile.save();
@@ -96,7 +96,7 @@ router.post('/', async (req, res, next) => {
   }
 });
 
-router.put('/me', isUser, async (req, res, next) => {
+router.put("/me", isUser, async (req, res, next) => {
   try {
     delete req.body.username;
     delete req.body.email;
@@ -112,22 +112,22 @@ router.put('/me', isUser, async (req, res, next) => {
 });
 
 router.post(
-  '/me/upload',
-  upload.single('profile'),
+  "/me/upload",
+  upload.single("profile"),
   isUser,
   async (req, res, next) => {
     try {
       if (req.file) {
         const cld_upload_stream = cloudinary.uploader.upload_stream(
           {
-            folder: 'profiles',
+            folder: "profiles",
           },
           async (err, result) => {
             if (!err) {
               req.user.image = result.secure_url;
               await req.user.save({ validateBeforeSave: false });
 
-              res.status(200).send('Done');
+              res.status(200).send("Done");
             }
           }
         );
@@ -135,7 +135,7 @@ router.post(
       } else {
         const err = new Error();
         err.httpStatusCode = 400;
-        err.message = 'Image file missing!';
+        err.message = "Image file missing!";
         next(err);
       }
     } catch (error) {
@@ -144,22 +144,22 @@ router.post(
   }
 );
 router.post(
-  '/:username/upload/cover',
+  "/:username/upload/cover",
   isUser,
-  upload.single('cover'),
+  upload.single("cover"),
   async (req, res, next) => {
     try {
       if (req.file) {
         const cld_upload_stream = cloudinary.uploader.upload_stream(
           {
-            folder: 'covers',
+            folder: "covers",
           },
           async (err, result) => {
             if (!err) {
               req.user.cover = result.secure_url;
               await req.user.save(v);
 
-              res.status(200).send('Done');
+              res.status(200).send("Done");
             }
           }
         );
@@ -167,7 +167,7 @@ router.post(
       } else {
         const err = new Error();
         err.httpStatusCode = 400;
-        err.message = 'Image file missing!';
+        err.message = "Image file missing!";
         next(err);
       }
     } catch (error) {
@@ -176,7 +176,7 @@ router.post(
   }
 );
 
-router.get('/:username/pdf', isUser, async (req, res, next) => {
+router.get("/:username/pdf", isUser, async (req, res, next) => {
   try {
     const profile = await profileSchema.findOne({
       username: req.params.username,
@@ -185,29 +185,29 @@ router.get('/:username/pdf', isUser, async (req, res, next) => {
     const doc = new pdfdocument();
     const url = profile.image;
     res.setHeader(
-      'Content-Disposition',
+      "Content-Disposition",
       `attachment; filename=${profile.name}.pdf`
     );
 
     if (url.length > 0) {
       const response = await axios.get(url, {
-        responseType: 'arraybuffer',
+        responseType: "arraybuffer",
       });
-      const img = new Buffer(response.data, 'base64');
+      const img = new Buffer(response.data, "base64");
       doc.image(img, 88, 30, {
         fit: [100, 100],
       });
     }
 
-    doc.font('Helvetica-Bold');
+    doc.font("Helvetica-Bold");
     doc.fontSize(18);
 
     doc.text(`${profile.name} ${profile.surname}`, 100, 140, {
       width: 410,
-      align: 'center',
+      align: "center",
     });
     doc.fontSize(12);
-    doc.font('Helvetica');
+    doc.font("Helvetica");
     doc.text(
       `
     ${profile.title}
@@ -216,13 +216,13 @@ router.get('/:username/pdf', isUser, async (req, res, next) => {
       360,
       180,
       {
-        align: 'left',
+        align: "left",
       }
     );
     doc.fontSize(18);
-    doc.text('Experiences', 100, 270, {
+    doc.text("Experiences", 100, 270, {
       width: 410,
-      align: 'center',
+      align: "center",
     });
     doc.fontSize(12);
     const start = async () => {
@@ -238,14 +238,14 @@ router.get('/:username/pdf', isUser, async (req, res, next) => {
         `),
         {
           width: 410,
-          align: 'center',
+          align: "center",
         }
       );
     };
     await start();
 
     let grad = doc.linearGradient(50, 0, 350, 100);
-    grad.stop(0, '#0077B5').stop(1, '#004451');
+    grad.stop(0, "#0077B5").stop(1, "#004451");
 
     doc.rect(0, 0, 70, 1000);
     doc.fill(grad);
@@ -258,7 +258,7 @@ router.get('/:username/pdf', isUser, async (req, res, next) => {
   }
 });
 
-router.delete('/me', isUser, async (req, res, next) => {
+router.delete("/me", isUser, async (req, res, next) => {
   try {
     await req.user.remove();
     await ExperienceModel.collection.deleteMany({
@@ -266,13 +266,13 @@ router.delete('/me', isUser, async (req, res, next) => {
     });
     await PostsModel.collection.deleteMany({ username: req.user.username });
 
-    res.send('Deleted');
+    res.send("Deleted");
   } catch (error) {
     next(error);
   }
 });
 
-router.post('/login', async (req, res, next) => {
+router.post("/login", async (req, res, next) => {
   try {
     const { credentials, password } = req.body;
 
@@ -283,22 +283,22 @@ router.post('/login', async (req, res, next) => {
 
     if (findUser) {
       const token = await generateTokens(findUser);
-      res.cookie('token', token, {
-        path: '/',
+      res.cookie("token", token, {
+        path: "/",
         httpOnly: true,
         sameSite: true,
       });
       res.send(token);
     } else {
-      res.status(404).send('Incorrent email or password');
-      console.log('Not Found');
+      res.status(404).send("Incorrent email or password");
+      console.log("Not Found");
     }
   } catch (error) {
     next(error);
   }
 });
 
-router.post('/signup', async (req, res, next) => {
+router.post("/signup", async (req, res, next) => {
   try {
     const userBody = new ProfileModel(req.body);
     const addUser = await userBody.save();
@@ -306,7 +306,7 @@ router.post('/signup', async (req, res, next) => {
       res.status(201).send(addUser._id);
     } else {
       const err = new Error();
-      err.message = 'Something went wrong';
+      err.message = "Something went wrong";
       err.httpStatusCode = 400;
       next(err);
     }
@@ -315,15 +315,27 @@ router.post('/signup', async (req, res, next) => {
   }
 });
 
-router.post('/logout', isUser, async (req, res, next) => {
+router.post("/logout", isUser, async (req, res, next) => {
   try {
-    req.user.token = '';
+    req.user.token = "";
     await req.user.save({ validateBeforeSave: false });
 
-    res.redirect('/');
+    res.redirect("/");
   } catch (error) {
     next(error);
   }
 });
+
+// auth with passport
+router.get("/auth/linkedin", passport.authenticate("linkedin"));
+
+router.get(
+  "/auth/linkedin/callback",
+  passport.authenticate("linkedin", { failureRedirect: "/login" }),
+  function (req, res) {
+    // Successful authentication, redirect home.
+    res.redirect("/");
+  }
+);
 
 module.exports = router;
