@@ -19,18 +19,18 @@ const chat = (server) => {
       const newMessage = new MessageModel(message);
       const saveMessage = await newMessage.save();
 
-      const socketId = onlineUsers.find(
+      const findUser = onlineUsers.find(
         (user) => user.username === saveMessage.to
       );
 
-      if (!socketId) {
+      if (!findUser) {
         const err = new Error();
         err.httpStatusCode = 404;
         err.message = 'User not found!';
         throw err;
       }
 
-      io.to(socketId.socketId).emit('message', {
+      io.to(findUser.socketId).emit('message', {
         from: saveMessage.from,
         to: saveMessage.to,
         text: saveMessage.text,
