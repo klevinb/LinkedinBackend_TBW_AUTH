@@ -10,15 +10,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/klevinb/LinkedinBackend_TBW.git"
+    "url": "git+https://github.com/klevinb/LinkedinBackend_TBW_AUTH.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/klevinb/LinkedinBackend_TBW/issues"
+    "url": "https://github.com/klevinb/LinkedinBackend_TBW_AUTH/issues"
   },
-  "homepage": "https://github.com/klevinb/LinkedinBackend_TBW#readme",
+  "homepage": "https://github.com/klevinb/LinkedinBackend_TBW_AUTH#readme",
   "dependencies": {
     "axios": "^0.19.2",
     "bcrypt": "^5.0.0",
