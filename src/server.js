@@ -8,6 +8,7 @@ const apiRoutes = require('./routes/api');
 const { notFound, badRequest, generalError } = require('./errorHandlers');
 
 const app = express();
+app.use(cors());
 
 const server = http.createServer(app);
 
@@ -45,7 +46,6 @@ const corsOptions = {
 // };
 
 app.use(express.json());
-app.use(cors());
 app.use(express.static(publicPath));
 app.use(passport.initialize());
 app.use(passport.session());
