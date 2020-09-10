@@ -7,7 +7,6 @@ const PostSchema = new Schema(
   {
     text: {
       type: String,
-      required: [true, 'Please put the text for the post'],
     },
     image: String,
     username: {
