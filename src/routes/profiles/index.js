@@ -31,7 +31,7 @@ const imagePath = path.join(__dirname, '../../../public/img/profiles');
 const expPath = path.join(__dirname, '../../../public/img/experiences');
 
 router.get('/messages/:username', async (req, res) => {
-  const messages = await MessageModel.find({ from: req.params.username });
+  const messages = await MessageModel.find();
 
   res.send(messages);
 });
