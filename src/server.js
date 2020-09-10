@@ -7,9 +7,15 @@ const mongoose = require('mongoose');
 const apiRoutes = require('./routes/api');
 const { notFound, badRequest, generalError } = require('./errorHandlers');
 
+const app = express();
+
+const server = http.createServer(app);
+
 const helmet = require('helmet');
 const cookieParse = require('cookie-parser');
 const chat = require('./routes/chat/index');
+
+chat(server);
 
 require('./routes/authorization/oauth');
 const passport = require('passport');
@@ -17,9 +23,8 @@ const passport = require('passport');
 const port = process.env.PORT || 3005;
 const publicPath = join(__dirname, '../public');
 
-const server = express();
-server.use(cookieParse());
-server.use(helmet());
+app.use(cookieParse());
+app.use(helmet());
 
 const whiteList = process.env.WL;
 
@@ -34,23 +39,23 @@ const whiteList = process.env.WL;
 // };
 
 const corsOptions = {
-  origin: 'http://localhost:3000',
+  origin: process.env.FRONTEND_URL,
   credentials: true,
 };
 
-server.use(express.json());
-server.use(cors(corsOptions));
-server.use(express.static(publicPath));
-server.use(passport.initialize());
-server.use(passport.session());
+app.use(express.json());
+app.use(cors(corsOptions));
+app.use(express.static(publicPath));
+app.use(passport.initialize());
+app.use(passport.session());
 
-server.use('/api', apiRoutes);
+app.use('/api', apiRoutes);
 
-server.use(notFound);
-server.use(badRequest);
-server.use(generalError);
+app.use(notFound);
+app.use(badRequest);
+app.use(generalError);
 
-console.log(listEndpoints(server));
+console.log(listEndpoints(app));
 
 mongoose
   .connect(
