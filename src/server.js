@@ -8,7 +8,6 @@ const apiRoutes = require('./routes/api');
 const { notFound, badRequest, generalError } = require('./errorHandlers');
 
 const app = express();
-app.use(cors());
 
 const server = http.createServer(app);
 
@@ -29,23 +28,23 @@ app.use(helmet());
 
 const whiteList = process.env.WL;
 
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     if (whiteList.indexOf(origin) !== -1) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error('Not allowed by CORS'));
+//     }
+//   },
+// };
+
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (whiteList.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: process.env.FRONTEND_URL,
   credentials: true,
 };
 
-// const corsOptions = {
-//   origin: process.env.FRONTEND_URL,
-//   credentials: true,
-// };
-
 app.use(express.json());
+app.use(cors(corsOptions));
 app.use(express.static(publicPath));
 app.use(passport.initialize());
 app.use(passport.session());
