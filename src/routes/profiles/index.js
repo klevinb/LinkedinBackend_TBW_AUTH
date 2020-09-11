@@ -339,7 +339,8 @@ router.get(
       const token = req.user.token;
       res.cookie('token', token, {
         httpOnly: true,
-        sameSite: true,
+        sameSite: 'none',
+        secure: true,
       });
 
       res.writeHead(301, {
@@ -364,7 +365,8 @@ router.get(
 
       res.cookie('token', token, {
         httpOnly: true,
-        sameSite: true,
+        sameSite: 'none',
+        secure: true,
       });
 
       res.writeHead(301, {
