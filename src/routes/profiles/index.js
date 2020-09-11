@@ -344,7 +344,8 @@ router.get(
       });
 
       res.writeHead(301, {
-        Location: 'http://localhost:3000/profiles/me?' + req.user.username,
+        Location:
+          process.env.FRONTEND_URL + '/profiles/me?' + req.user.username,
       });
       res.end();
     } catch (error) {
@@ -370,7 +371,8 @@ router.get(
       });
 
       res.writeHead(301, {
-        Location: 'http://localhost:3000/profiles/me?' + req.user.username,
+        Location:
+          process.env.FRONTEND_URL + '/profiles/me?' + req.user.username,
       });
       res.end();
     } catch (error) {
