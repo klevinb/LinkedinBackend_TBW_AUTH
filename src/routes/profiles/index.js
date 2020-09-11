@@ -30,10 +30,15 @@ const upload = multer();
 const imagePath = path.join(__dirname, '../../../public/img/profiles');
 const expPath = path.join(__dirname, '../../../public/img/experiences');
 
-router.get('/messages/:username', async (req, res) => {
+router.get('/messages', isUser, async (req, res) => {
   const messages = await MessageModel.find();
 
   res.send(messages);
+});
+
+router.delete('/messages', isUser, async (req, res) => {
+  await MessageModel.collection.deleteMany();
+  res.send('Done');
 });
 
 router.get('/', isUser, async (req, res, next) => {
@@ -279,6 +284,7 @@ router.post('/login', async (req, res, next) => {
       const token = await generateTokens(findUser);
       res.cookie('token', token.token, {
         httpOnly: true,
+        sameSite: true,
       });
       res.send(findUser.username);
     } else {
@@ -332,6 +338,7 @@ router.get(
       const token = req.user.token;
       res.cookie('token', token, {
         httpOnly: true,
+        sameSite: true,
       });
 
       res.writeHead(301, {
@@ -356,6 +363,7 @@ router.get(
 
       res.cookie('token', token, {
         httpOnly: true,
+        sameSite: true,
       });
 
       res.writeHead(301, {
