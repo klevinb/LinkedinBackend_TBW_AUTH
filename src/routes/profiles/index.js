@@ -284,7 +284,7 @@ router.post('/login', async (req, res, next) => {
       const token = await generateTokens(findUser);
       res.cookie('token', token.token, {
         httpOnly: true,
-        sameSite: false,
+        sameSite: 'none',
       });
       res.send(findUser.username);
     } else {
