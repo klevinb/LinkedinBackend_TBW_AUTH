@@ -285,6 +285,7 @@ router.post('/login', async (req, res, next) => {
       res.cookie('token', token.token, {
         httpOnly: true,
         sameSite: 'none',
+        secure: true,
       });
       res.send(findUser.username);
     } else {
